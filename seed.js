@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 const User = require("./models/User");
 
-mongoose.connect("mongodb://127.0.0.1:27017/agrov");
+mongoose.connect(process.env.MONGO_URL);
 
 (async () => {
   await User.deleteMany();
@@ -13,6 +13,6 @@ mongoose.connect("mongodb://127.0.0.1:27017/agrov");
     role: "admin"
   });
 
-  console.log("Seed done");
+  console.log("ADMIN CREATED");
   process.exit();
 })();

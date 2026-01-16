@@ -1,4 +1,3 @@
-
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const router = express.Router();
@@ -45,13 +44,52 @@ router.post("/pay", auth, async (req, res) => {
   res.json({ success: true, newBalance: user.balance });
 });
 
-/* ADMIN USERS (ADMIN ONLY) */
-router.get("/admin/users", auth, async (req, res) => {
+/* ===== ADMIN ONLY ===== */
+router.use("/admin", auth, (req, res, next) => {
   if (req.user.role !== "admin") {
     return res.status(403).json({ error: "Forbidden" });
   }
+  next();
+});
+
+/* LIST USERS */
+router.get("/admin/users", async (req, res) => {
   const users = await User.find();
   res.json(users);
 });
 
+/* CREATE USER */
+router.post("/admin/users", async (req, res) => {
+  const user = await User.create({
+    phone: req.body.phone,
+    pin: req.body.pin || "0000",
+    balance: req.body.balance || 0,
+    role: req.body.role || "user"
+  });
+  res.json(user);
+});
+
+/* RESET PIN */
+router.post("/admin/users/:id/reset-pin", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  user.pin = "0000";
+  await user.save();
+  res.json({ success: true });
+});
+
+/* UPDATE BALANCE */
+router.post("/admin/users/:id/balance", async (req, res) => {
+  const user = await User.findById(req.params.id);
+  user.balance = req.body.balance;
+  await user.save();
+  res.json({ success: true });
+});
+
+/* DELETE USER */
+router.delete("/admin/users/:id", async (req, res) => {
+  await User.findByIdAndDelete(req.params.id);
+  res.json({ success: true });
+});
+
 module.exports = router;
+

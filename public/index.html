@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>AGROV ADMIN</title>
+</head>
+<body>
+  <h1>AGROV ADMIN</h1>
+
+  <div id="login">
+    <input id="phone" placeholder="Phone" />
+    <input id="pin" placeholder="PIN" type="password" />
+    <button onclick="login()">Login</button>
+  </div>
+
+  <div id="panel" style="display:none">
+    <h2>Users</h2>
+
+    <input id="newPhone" placeholder="New phone" />
+    <button onclick="createUser()">Create user</button>
+
+    <pre id="output"></pre>
+  </div>
+
+  <script>
+    const API = "/api";
+    let TOKEN = null;
+
+    async function login() {
+      const phone = phoneInput.value;
+      const pin = pinInput.value;
+
+      const r1 = await fetch(API + "/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phone })
+      });
+      const d1 = await r1.json();
+
+      const r2 = await fetch(API + "/unlock", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: d1.userId, pin })
+      });
+      const d2 = await r2.json();
+
+      TOKEN = d2.token;
+      loginDiv.style.display = "none";
+      panelDiv.style.display = "block";
+      loadUsers();
+    }
+
+    async function loadUsers() {
+      const r = await fetch(API + "/admin/users", {
+        headers: { Authorization: "Bearer " + TOKEN }
+      });
+      output.textContent = JSON.stringify(await r.json(), null, 2);
+    }
+
+    async function createUser() {
+      await fetch(API + "/admin/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: "Bearer " + TOKEN
+        },
+        body: JSON.stringify({ phone: newPhone.value })
+      });
+      loadUsers();
+    }
+
+    const phoneInput = document.getElementById("phone");
+    const pinInput = document.getElementById("pin");
+    const loginDiv = document.getElementById("login");
+    const panelDiv = document.getElementById("panel");
+    const output = document.getElementById("output");
+    const newPhone = document.getElementById("newPhone");
+  </script>
+</body>
+</html>
+
