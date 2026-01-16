@@ -1,4 +1,4 @@
-import 'dotenv/config';          // ⬅️ DODATO
+
 import express from 'express';
 import { pool } from './db.js';
 import apiRoutes from './routes/api.routes.js';
